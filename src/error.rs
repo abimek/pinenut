@@ -15,7 +15,11 @@ pub type Result<T> = result::Result<T, Error>;
 pub enum Error {
     /// An error for when an invalid argument is used / given
     #[error("Invalid Argument for {name} found {found} expected {expected}")]
-    ArgumentError{name: String, found: String, expected: String},
+    ArgumentError {
+        name: String,
+        found: String,
+        expected: String,
+    },
 
     /// This is the error used when request fails to make a request
     #[error("Reqwest Error")]
@@ -36,9 +40,13 @@ pub enum Error {
 
     /// An error that describes an incorrectly sized vector
     #[error("Vector of id {id} had dimension {found} expected dimension size of {expected}")]
-    VectorDimensionError{found: u32, expected: u32, id: String},
+    VectorDimensionError {
+        found: u32,
+        expected: u32,
+        id: String,
+    },
 
     /// An error used for when the url value within an IndexDescription can't be found
     #[error("URL is not available within [`pine_client::http::models::DescribeStatus`]")]
-    URLNotAvailable
+    URLNotAvailable,
 }

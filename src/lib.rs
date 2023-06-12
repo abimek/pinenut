@@ -12,7 +12,6 @@
 //#![deny(missing_docs)]
 #![warn(rust_2018_idioms)]
 
-
 macro_rules! if_http {
     ($($item:item)*) => {$(
         #[cfg(feature="http")]
@@ -22,11 +21,10 @@ macro_rules! if_http {
 
 //TODO: create macro for GRCP when that becomes implemented
 
-if_http!{
+
+if_http! {
     mod http;
-    pub use self::http::{Client, Credentials, Index, 
-        models::{IndexStats, Namespace}
-    };
+    pub use self::http::{models, Client, Index};
 }
 
 pub mod error;

@@ -1,3 +1,4 @@
+use core::fmt;
 use std::collections::{HashMap, BTreeMap};
 
 use serde::{Serialize, Deserialize};
@@ -14,6 +15,20 @@ pub enum Value {
     Array(Vec<Value>),
     Object(BTreeMap<String, Value>),
 }
+
+#[derive(Debug)]
+pub enum Metric {
+    EUCLIDEAN
+}
+
+impl fmt::Display for Metric {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Metric::EUCLIDEAN => write!(f, "euclidean")
+        }
+    }
+}
+
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct VectorRequest {
@@ -36,13 +51,13 @@ pub struct IndexCreateRequest {
     pub(super) metric: String
 }
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Namespace {
     #[serde(rename = "vectorCount")]
     vector_count: usize
 }
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct IndexStats {
     pub namespaces: HashMap<String, Namespace>,
     pub dimension: usize,
@@ -110,6 +125,20 @@ pub enum DescribeStatusState {
     Terminating,
     Ready,
     InitializationFailed
+}
+
+impl fmt::Display for DescribeStatusState {
+
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            DescribeStatusState::Initializing => write!(f, "Initializing"),
+            DescribeStatusState::ScalingUp => write!(f, "ScalingUp"),
+            DescribeStatusState::ScalingDown => write!(f, "ScalingDown"),
+            DescribeStatusState::Terminating => write!(f, "Terminating"),
+            DescribeStatusState::Ready => write!(f, "Ready"),
+            DescribeStatusState::InitializationFailed => write!(f, "InitializationFailed")
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]

@@ -1,36 +1,18 @@
 use crate::{
     Result, 
-    http::try_pincone_get_request
-};
-use super::{
-    Index,
-    models::{IndexDescription, CollectionDescription}
+    Index, models::CollectionDescription
 };
 
+use super::{Credentials, Connection, try_pinecone_get_request};
 
-pub struct Credentials {
-    api_key: String,
-    environment: String
-}
-
-
-impl Credentials {
-    pub(super) fn api_key(&self) -> &str {
-        &self.api_key
-    }
-
-    pub(super) fn environment(&self) -> &str {
-        &self.environment
-    }
-}
-
+/// An (unauthenticated) handle to talk with Pinecone. This is where you first go when you need a
+/// connection. 
 pub struct Client{
     client: reqwest::Client,
-    creds: Credentials
+    creds: Credentials 
 }
 
 impl Client {
-
 
     pub fn new<D>(api_key: D, environment: D) -> Client
     where
@@ -44,37 +26,36 @@ impl Client {
             }
         }
     }
+    /// Will list all the indexes associated with the given [`Credentials`]
+    pub async fn list_indexes(&self) -> Result<Vec<String>> {
+        try_pinecone_get_request::<Self, Vec<String>>(self, "/databases", None::<String>).await
+    }
 
-    pub(super) fn client(&self) -> &reqwest::Client {
+    /// Will list all the collections associated with the given [`Credentialsc`].
+    pub async fn list_collections(&self) -> Result<Vec<String>> {
+        try_pinecone_get_request::<Self, Vec<String>>(self, "/collections", None::<String>).await
+    }
+
+    /// Describes a specific collection returning specific information that can be referenced at
+    /// the pinecone api reference (https://docs.pinecone.io/reference/describe_collection)
+    pub async fn describe_collection(&self, name: impl AsRef<str>) -> Result<CollectionDescription> {
+        try_pinecone_get_request::<Self, CollectionDescription>(self, format!("/collections/{}", name.as_ref()), None::<String>).await
+    }
+
+    /// Creates and returns an Index object that can be used to run index specific operations, it
+    /// is the primary way you interface with the Index api.
+    pub async fn index(self, name: impl Into<String>) -> Index {
+        Index::new::<Self>(&self, name)
+    }
+}
+
+impl Connection for Client {
+    fn client(&self) -> &reqwest::Client {
         &self.client
     }
 
-    pub(super) fn credentials(&self) -> &Credentials {
+    fn credentials(&self) -> &Credentials {
         &self.creds
-    }
-
-    /// returns a list of vector indexes
-    pub async fn list_indexes(&self) -> Result<Vec<String>> {
-        return try_pincone_get_request::<Vec<String>>(&self, "/databases").await;
-    }
-
-    pub async fn describe_index(&self, name: impl AsRef<str>) -> Result<IndexDescription> {
-        return try_pincone_get_request::<IndexDescription>(&self, format!("/databases/{}", name.as_ref())).await;
-    }
-
-    pub async fn list_collections(&self) -> Result<Vec<String>> {
-        return try_pincone_get_request::<Vec<String>>(&self, "/collections").await;
-    }
-
-    pub async fn describe_collection(&self, name: impl AsRef<str>) -> Result<CollectionDescription> {
-        return try_pincone_get_request::<CollectionDescription>(&self, format!("/collections/{}", name.as_ref())).await;
-    }
-
-    /// name is the name of the index and project is the name of the project, project can be seen
-    /// in the link given in the pinecone indexes list, it's the content behind the name of the
-    /// index but before .svc
-    pub async fn index<'a>(&'a self, name: impl Into<String>) -> Index<'a> {
-        Index::new(self, name)
     }
 }
 
@@ -147,8 +128,7 @@ mod client_test {
         let client = create_client();
         match client.list_indexes().await {
             Ok(list) => {
-                println!("{:?}", list);
-                assert!((list.len() >= 0), "working? {:?}", list);
+                assert!((list.len() > 0), "working? {:?}", list);
             },
             Err(error) => panic!("Unable to list indexes: {:?}", error)
         }
