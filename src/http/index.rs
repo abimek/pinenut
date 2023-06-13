@@ -1,5 +1,5 @@
 use reqwest::{StatusCode, Method};
-use crate::{Result, Error, http::try_pinecone_request_json}; 
+use crate::{Result, Error, http::{try_pinecone_request_json, try_pinecone_request_text}}; 
 
 use super::{
     Connection,
@@ -106,6 +106,10 @@ impl Index {
         let url = self.try_url().await?;
         try_pinecone_request_json::<Index, VectorRequest, UpsertResponse>(self, Method::POST, StatusCode::OK, Some(url), "/vectors/upsert", Some(&upsert)).await
     }
+
+    pub async fn delete(self) -> Result<String> {
+        try_pinecone_request_text::<Index, String>(&self, Method::DELETE, StatusCode::ACCEPTED, None::<String>, format!("/databases/{}", self.name), None).await
+    }
 }
 
 impl Connection for Index {
@@ -170,6 +174,29 @@ mod index_tests {
             Err(err) => panic!("failed to get index stats: {:?}", err)
         }
     }
+/*
+    #[wasm_bindgen_test]
+    async fn test_delete_index() {
+        let client = create_client();
+        let index = create_index(&client).await;
+        match index.delete().await {
+            Ok(_) => assert!(true),
+            Err(error) => {
+                match error {
+                    Error::PineconeResponseError(code,typ,msg) => {
+                        if code == StatusCode::NOT_FOUND {
+                            assert!(true);
+                            return;
+                        }
+                        panic!("Unable to delete index: {:?}", Error::PineconeResponseError(code, typ, msg))
+                    },
+                    _ => {
+                        panic!("Unable to delete index: {:?}", error)
+                    }
+                }
+            }
+        }
+    }*/
 }
 
 

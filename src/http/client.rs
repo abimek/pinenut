@@ -1,7 +1,7 @@
 use reqwest::{StatusCode, Method};
 use crate::{
     Result, 
-    Index, models::{CollectionDescription, CreateCollectionRequest}, http::{try_pinecone_request_json, try_pinecone_request_text}
+    Index, models::{CollectionDescription, CreateCollectionRequest, IndexCreateRequest}, http::{try_pinecone_request_json, try_pinecone_request_text}
 
 };
 
@@ -47,18 +47,17 @@ impl Client {
         try_pinecone_request_text::<Client, CreateCollectionRequest>(self, Method::POST, StatusCode::CREATED, None::<String>, "/collections", Some(&request)).await
     }
 
-    /// Describes a specific collection returning specific information that can be referenced at
-    /// the pinecone api reference (https://docs.pinecone.io/reference/describe_collection)
     pub async fn describe_collection(&self, name: impl AsRef<str>) -> Result<CollectionDescription> {
         try_pinecone_request_json::<Client, String, CollectionDescription>(self, Method::GET, StatusCode::OK, None::<String>, format!("/collections/{}", name.as_ref()), None).await
     }
 
-    /// This will delete a collection
     pub async fn delete_collection(&self, name: impl AsRef<str>) -> Result<String> {
         try_pinecone_request_text::<Client, String>(self, Method::DELETE, StatusCode::ACCEPTED, None::<String>, format!("/collections/{}", name.as_ref()), None).await
     }
 
-
+    pub async fn create_index(&self, data: IndexCreateRequest) -> Result<String> {
+        try_pinecone_request_text::<Client, IndexCreateRequest>(self, Method::POST, StatusCode::CREATED, None::<String>, "/databases", Some(&data)).await
+    }
     /// Creates and returns an Index object that can be used to run index specific operations, it
     /// is the primary way you interface with the Index api.
     pub fn index(&self, name: impl Into<String>) -> Index {
@@ -83,7 +82,7 @@ mod client_test {
     use super::*;
    // use crate::http::Metric;
     use wasm_bindgen_test::*;
-    use crate::Error;
+    use crate::{Error, models::Metric};
 
     fn create_client() -> Client {
         Client::new(
@@ -109,6 +108,33 @@ mod client_test {
                 assert!(!list.is_empty(), "working? {:?}", list);
             },
             Err(error) => panic!("Unable to list indexes: {:?}", error)
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn test_create_index() {
+        let client = create_client();
+        match client.create_index(IndexCreateRequest{
+            name: env!("PINECONE_INDEX_NAME").to_string(),
+            dimension: 32,
+            metric: Metric::EUCLIDEAN.to_string()
+        }).await {
+            Ok(_) => assert!(true),
+            Err(error) => {
+                match error {
+                    Error::PineconeResponseError(code,typ,msg) => {
+                        if code == StatusCode::CONFLICT || code == StatusCode::BAD_REQUEST {
+                            assert!(true);
+                            return;
+                        }
+                        panic!("Unable to create index: {:?}", Error::PineconeResponseError(code, typ, msg))
+                    },
+                    _ => {
+                        panic!("Unable to create index: {:?}", error)
+                    }
+                }
+            }
+
         }
     }
 
