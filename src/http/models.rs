@@ -51,15 +51,21 @@ pub struct PineconeErrorResponse {
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct IndexCreateRequest {
-    pub(super) name: String,
-    pub(super) dimension: usize,
-    pub(super) metric: String
+    pub name: String,
+    pub dimension: usize,
+    pub metric: String
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Namespace {
     #[serde(rename = "vectorCount")]
-    vector_count: usize
+    pub vector_count: usize
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct ConfigureIndexRequest {
+    pub replicas: usize,
+    pub pod_type: String
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]

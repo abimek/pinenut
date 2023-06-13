@@ -1,5 +1,5 @@
 use reqwest::{StatusCode, Method};
-use crate::{Result, Error, http::{try_pinecone_request_json, try_pinecone_request_text}}; 
+use crate::{Result, Error, http::{try_pinecone_request_json, try_pinecone_request_text}, models::ConfigureIndexRequest}; 
 
 use super::{
     Connection,
@@ -110,6 +110,15 @@ impl Index {
     pub async fn delete(self) -> Result<String> {
         try_pinecone_request_text::<Index, String>(&self, Method::DELETE, StatusCode::ACCEPTED, None::<String>, format!("/databases/{}", self.name), None).await
     }
+
+    pub async fn configure(&self, replicas: usize, pod_type: String) -> Result<String> {
+        let p = ConfigureIndexRequest{
+            replicas,
+            pod_type
+        };
+        try_pinecone_request_text::<Index, ConfigureIndexRequest>(self, Method::PATCH, StatusCode::ACCEPTED, None::<String>, format!("/databases/{}", self.name), Some(&p)).await
+    }
+
 }
 
 impl Connection for Index {
@@ -174,6 +183,31 @@ mod index_tests {
             Err(err) => panic!("failed to get index stats: {:?}", err)
         }
     }
+
+    #[wasm_bindgen_test]
+    async fn test_configure_index() {
+        let client = create_client();
+        let index = create_index(&client).await;
+        match index.configure(1, "s1.x1".to_string()).await {
+            Ok(_) => assert!(true),
+            Err(error) => {
+                match error {
+                    Error::PineconeResponseError(code,typ,msg) => {
+                        if code == StatusCode::BAD_REQUEST {
+                            assert!(true);
+                            return;
+                        }
+                        panic!("Unable to configure index: {:?}", Error::PineconeResponseError(code, typ, msg))
+                    },
+                    _ => {
+                        panic!("Unable to configure index: {:?}", error)
+                    }
+                }
+            }
+        }
+    }
+
+
 /*
     #[wasm_bindgen_test]
     async fn test_delete_index() {

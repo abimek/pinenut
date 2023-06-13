@@ -57,7 +57,7 @@ where
                 .send()
                 .await;
         },
-        Method::POST => {
+        Method::POST | Method::PATCH => {
             let data;
             match data_struct {
                 Some(ref val) => {data=val;},
