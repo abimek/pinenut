@@ -29,6 +29,11 @@ impl fmt::Display for Metric {
     }
 }
 
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct CreateCollectionRequest {
+    pub(super) name: String,
+    pub(super) source: String
+}
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct VectorRequest {

@@ -1,6 +1,6 @@
 use std::result;
 
-use reqwest::{Response, StatusCode};
+use reqwest::{Response, StatusCode, Method};
 
 use crate::http::models::PineconeErrorResponse;
 
@@ -27,12 +27,12 @@ pub enum Error {
 
     /// An error returned when reqwest fails to do an action while the overall request is
     /// successfull, it is used currently for when a request goes through but a json decode fails
-    #[error("Reqwest Response erro")]
+    #[error("Reqwest Response error")]
     ReqwestResponseError(StatusCode, reqwest::Error),
 
     /// When pinecone sends their [`PineconeErrorResponse`] to the client
-    #[error("Finetune Failed with Response {0:?}")]
-    PineconeResponseError(PineconeErrorResponse),
+    #[error("Finetune Failed with Response with Status Code {0:?} {1:?} {2:?}")]
+    PineconeResponseError(StatusCode, Option<PineconeErrorResponse>, Option<String>),
 
     /// This error is used when Pinecone fails to return a [`PineconeErrorResponse`]
     #[error("This request has failed")]
@@ -49,4 +49,8 @@ pub enum Error {
     /// An error used for when the url value within an IndexDescription can't be found
     #[error("URL is not available within [`pine_client::http::models::DescribeStatus`]")]
     URLNotAvailable,
+
+    /// This is an internal error used for internal checks
+    #[error("Unsupported method: {}", method.as_str())]
+    UnsupportedMethod{method: Method}
 }

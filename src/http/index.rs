@@ -1,14 +1,11 @@
-
-use crate::{Result, Error};
+use reqwest::{StatusCode, Method};
+use crate::{Result, Error, http::try_pinecone_request_json}; 
 
 use super::{
-    try_pinecone_get_request,
-    try_pinecone_post_request,
     Connection,
     Credentials,
     models::{VectorRequest, Vector, IndexStats, UpsertResponse, IndexDescription, Metric},
 };
-
 
 impl From<Metric> for String {
     fn from(value: Metric) -> Self {
@@ -46,8 +43,10 @@ impl Index {
     ///
     /// This operation is done for the other pinecone operations / requests as it returns us the url 
     /// to make requests too
+    ///
     pub async fn describe(&mut self)  -> Result<&IndexDescription> {
-        self.description = Some(try_pinecone_get_request::<Self, IndexDescription>(self, format!("/databases/{}", self.name), None::<String>).await?);
+        let name = self.name.clone();
+        self.description = Some(try_pinecone_request_json::<Index, String, IndexDescription>(self, Method::GET, StatusCode::OK, None::<String>, format!("/databases/{}", name), None).await?);
         Ok(self.description().unwrap())
     }
 
@@ -81,17 +80,17 @@ impl Index {
         if let Some(url) = self.url() {
             return Ok(url);
         }
-        self.describe().await;
+        let _ = self.describe().await;
         if let Some(url) = self.url() {
             return Ok(url);
         }
-        return Err(Error::URLNotAvailable)
+        Err(Error::URLNotAvailable)
     }
 
 
     pub async fn describe_stats(&mut self) -> Result<&IndexStats> {
-        let url = Some(self.try_url().await?);
-        self.stats = Some(try_pinecone_get_request::<Self, IndexStats>(self, "/describe_index_stats", url).await?);
+        let url = self.try_url().await?;
+        self.stats = Some(try_pinecone_request_json::<Index, String, IndexStats>(self, Method::GET, StatusCode::OK, Some(url), "/describe_index_stats", None).await?);
         Ok(self.stats().unwrap())
     }
 
@@ -99,38 +98,13 @@ impl Index {
         self.stats.as_ref()
     }
 
-
-
-/*    /// gets the latest information / statistics about the index, this is also used to validate
-    /// that we have a proper connection
-    pub async fn describe_stats(&mut self) -> Result<()> {
-      /*  let response = self.base_request(Method::GET, format!("/databases/{}", self.name))
-            .send()
-            .await;
-
-        match response {
-            Ok(resp) => {
-                match resp.json::<IndexStats>().await {
-                    Ok(index_info) => {
-                        self.stats = index_info;
-                        Ok(())
-                    },
-                    Err(err) => Err(Error::DescribeIndexError(err))
-                }
-            },
-            Err(err) => {
-                Err(Error::HTTPReqwestError("failed to get index stats".to_string(), err))
-            }
-        }*/
-    }*/
-
-
     pub async fn upsert(&mut self, namespace: String, vectors: Vec<Vector>) -> Result<UpsertResponse> {
         let upsert = VectorRequest{
             namespace,
             vectors
         };
-        try_pinecone_post_request::<VectorRequest, UpsertResponse>(self, true, "/vectors/upsert", &upsert).await
+        let url = self.try_url().await?;
+        try_pinecone_request_json::<Index, VectorRequest, UpsertResponse>(self, Method::POST, StatusCode::OK, Some(url), "/vectors/upsert", Some(&upsert)).await
     }
 }
 
