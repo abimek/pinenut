@@ -1,5 +1,6 @@
 use reqwest::{StatusCode, Method};
-use crate::{Result, Error, http::{try_pinecone_request_json, try_pinecone_request_text}, models::ConfigureIndexRequest}; 
+use serde_json::Value;
+use crate::{Result, Error, http::{try_pinecone_request_json, try_pinecone_request_text}, models::{ConfigureIndexRequest, UpdateRequest, FetchRequest, FetchResponse, QueryRequest, QueryResponse}}; 
 
 use super::{
     Connection,
@@ -119,6 +120,21 @@ impl Index {
         try_pinecone_request_text::<Index, ConfigureIndexRequest>(self, Method::PATCH, StatusCode::ACCEPTED, None::<String>, format!("/databases/{}", self.name), Some(&p)).await
     }
 
+    /// The return type of this method should be ignored
+    pub async fn update(&mut self, request: UpdateRequest) -> Result<Value> {
+        let url = self.try_url().await?;
+        try_pinecone_request_json::<Index, UpdateRequest, Value>(self, Method::POST, StatusCode::OK, Some(url), "/vectors/update", Some(&request)).await
+    }
+
+    pub async fn fetch(&mut self, request: FetchRequest) -> Result<FetchResponse> {
+        let url = request.url(self.try_url().await?);
+        try_pinecone_request_json::<Index, String, FetchResponse>(self, Method::GET, StatusCode::OK, Some(url), "", None).await
+    }
+
+    pub async fn query(&mut self, request: QueryRequest) -> Result<QueryResponse> {
+        let url = self.try_url().await?;
+        try_pinecone_request_json::<Index, QueryRequest, QueryResponse>(self, Method::POST, StatusCode::OK, Some(url), "/query", Some(&request)).await
+    }
 }
 
 impl Connection for Index {
@@ -152,7 +168,7 @@ mod index_tests {
         let client = create_client();
         let mut index = create_index(&client).await;
         let vec = Vector{
-            id: "A".to_string(),
+            id: "B".to_string(),
             values: vec![0.5; 32],
             sprase_values: None,
             metadata: None
@@ -207,30 +223,53 @@ mod index_tests {
         }
     }
 
-
-/*
     #[wasm_bindgen_test]
-    async fn test_delete_index() {
+    async fn test_update_index(){
         let client = create_client();
-        let index = create_index(&client).await;
-        match index.delete().await {
+        let mut index = create_index(&client).await;
+        let data = UpdateRequest{id: String::from("A"), ..Default::default()};
+        match index.update(data).await {
             Ok(_) => assert!(true),
             Err(error) => {
                 match error {
                     Error::PineconeResponseError(code,typ,msg) => {
-                        if code == StatusCode::NOT_FOUND {
+                        if code == StatusCode::BAD_REQUEST {
                             assert!(true);
                             return;
                         }
-                        panic!("Unable to delete index: {:?}", Error::PineconeResponseError(code, typ, msg))
+                        panic!("Unable to configure index: {:?}", Error::PineconeResponseError(code, typ, msg))
                     },
                     _ => {
-                        panic!("Unable to delete index: {:?}", error)
+                        panic!("Unable to configure index: {:?}", error)
                     }
                 }
             }
         }
-    }*/
+    }
+
+    #[wasm_bindgen_test]
+    async fn test_fetch_index(){
+        let client = create_client();
+        let mut index = create_index(&client).await;
+        let data = FetchRequest{ids: vec!["A".to_string()], namespace: None};
+        match index.fetch(data).await {
+            Ok(_) => assert!(true),
+            Err(error) => panic!("Unable to fetch: {:?}", error)
+        }
+    }
+
+    #[wasm_bindgen_test]
+    async fn test_query_index(){
+        let client = create_client();
+        let mut index = create_index(&client).await;
+        let data = QueryRequest{id: Some(String::from("A")), top_k: 1, ..Default::default()};
+        let data = FetchRequest{ids: vec!["A".to_string()], namespace: None};
+        match index.fetch(data).await {
+            Ok(_) => assert!(true),
+            Err(error) => panic!("Unable to fetch: {:?}", error)
+        }
+    }
+
 }
 
 

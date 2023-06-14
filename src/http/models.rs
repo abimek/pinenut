@@ -3,19 +3,6 @@ use std::collections::{HashMap, BTreeMap};
 
 use serde::{Serialize, Deserialize};
 
-/// This represents all the values 
-#[derive(Serialize, Deserialize, Default, Debug, Clone)]
-pub enum Value {
-    #[default]
-    Null,
-    Bool(bool),
-    Int(i64),
-    Float(f64),
-    String(String),
-    Array(Vec<Value>),
-    Object(BTreeMap<String, Value>),
-}
-
 #[derive(Debug)]
 pub enum Metric {
     EUCLIDEAN
@@ -45,7 +32,7 @@ pub struct VectorRequest {
 pub struct PineconeErrorResponse {
     pub code: usize,
     pub message: String,
-    pub details: Vec<HashMap<String, Value>>
+    pub details: Vec<MappedValue>
     //TODO: implement the details field
 }
 
@@ -80,8 +67,27 @@ pub struct IndexStats {
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct SparseValues {
-    indeces: Vec<u32>,
-    values: Vec<f32>
+    pub indeces: Vec<u32>,
+    pub values: Vec<f32>
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct FetchResponse{
+    pub vectors: BTreeMap<String, Vector>,
+    pub namespace: String
+}
+
+pub type MappedValue = BTreeMap<String, serde_json::Value>;
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct UpdateRequest {
+    pub id: String,
+    pub values: Option<Vec<f32>>,
+    #[serde(rename="sparseValues")]
+    pub sparse_values: Option<SparseValues>,
+    #[serde(rename="setMetadata")]
+    pub metadata: Option<MappedValue>,
+    pub namespace: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
@@ -89,7 +95,62 @@ pub struct Vector {
     pub id: String,
     pub values: Vec<f32>,
     pub sprase_values: Option<SparseValues>,
-    pub metadata: Option<BTreeMap<String, serde_json::Value>>
+    pub metadata: Option<MappedValue>
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct QueryRequest {
+    pub namespace: Option<String>,
+    #[serde(rename="topK")]
+    pub top_k: usize, 
+    pub filter: Option<BTreeMap<String, serde_json::Value>>,
+    #[serde(rename="includeValues")]
+    pub include_values: bool,
+    #[serde(rename="includeMetadata")]
+    pub include_metadata: bool,
+    pub vector: Option<Vec<f32>>,
+    #[serde(rename="sparseVectors")]
+    pub sparse_vector: Option<SparseValues>,
+    pub id: Option<String>
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct QueryResponse {
+    pub matches: Vec<Match>,
+    pub namespace: String
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct Match {
+    pub id: String,
+    pub score: Option<f32>,
+    pub values: Option<Vec<f32>>,
+    #[serde(rename="sparseValues")]
+    pub sparse_values: Option<SparseValues>,
+    pub metadata: Option<MappedValue>
+}
+
+#[derive(Serialize, Deserialize, Debug, Default, Clone)]
+pub struct FetchRequest {
+    pub ids: Vec<String>,
+    pub namespace: Option<String>
+}
+
+impl FetchRequest {
+
+    pub(crate) fn url(self, base: impl Into<String>) -> String {
+        let mut url: String = base.into();
+        url.push_str("/vectors/fetch?");
+        for id in self.ids {
+            url += format!("ids={}&", id).as_ref();
+        }
+        if let Some(namespace) = self.namespace {
+            url += format!("namespace={}", namespace).as_ref();
+        } else {
+            url.truncate(url.len() - 1);
+        }
+        url
+    }
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
@@ -119,8 +180,8 @@ pub struct DescribeIndexConfig {
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
 pub struct IndexStatusDescription {
-    pub waiting: Vec<Value>,
-    pub crashed: Vec<Value>,
+    pub waiting: Vec<serde_json::Value>,
+    pub crashed: Vec<serde_json::Value>,
     pub host: Option<String>,
     pub port: usize,
     pub state: DescribeStatusState,
