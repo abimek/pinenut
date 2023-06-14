@@ -1,7 +1,16 @@
 [package]
 name = "pinecone-wasm"
 version = "0.1.0"
+authors=["Abimalek Mekuriya"]
+documentation = "https://docs.rs./pinecone-wasm"
+repository = "https://github.com/abimek/pinecone-wasm"
+homepage = "https://github.com/abimek/pinecone-wasm"
+description = "Pinecone Client for Rust WASM"
+license = "Apache-2.0 OR MIT"
 edition = "2021"
+
+keywords = ["pinecone"]
+categories = ["api-bindings", "wsm"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [features]
