@@ -152,7 +152,7 @@ where
     U: Into<String>,
     A: AsRef<str>
 {
-    con.client().request(method, format!("https://{}{}", url.into(), path.as_ref()))
+    con.client().request(method, format!("{}{}", url.into(), path.as_ref()))
         .header("Api-Key", &con.credentials().api_key)
         .header("accept", accept_type.to_string())
         .header("content-type", "application/json")
