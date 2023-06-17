@@ -17,7 +17,7 @@
 //!
 //! Below is a basic client and index example.
 //!```no_run
-//!use pinecone_wasm::{Client, models::Vector};
+//!use pinenut::{Client, models::Vector};
 //!
 //!async fn index_upsert() {
 //!

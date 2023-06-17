@@ -1,11 +1,11 @@
 [package]
-name = "pinecone-wasm"
+name = "pinenut"
 version = "0.1.0"
 authors=["Abimalek Mekuriya"]
-documentation = "https://docs.rs./pinecone-wasm"
-repository = "https://github.com/abimek/pinecone-wasm"
-homepage = "https://github.com/abimek/pinecone-wasm"
-description = "Pinecone Client for Rust WASM"
+documentation = "https://docs.rs./pinenut"
+repository = "https://github.com/abimek/pinenut"
+homepage = "https://github.com/abimek/pinenut"
+description = "Pinecone Client for Rust"
 license = "Apache-2.0 OR MIT"
 edition = "2021"
 

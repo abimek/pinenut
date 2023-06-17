@@ -1,7 +1,6 @@
-extern crate pinecone_wasm;
+extern crate pinenut;
 
-use crate::pinecone_wasm::Client;
-use pinecone_wasm::models::Vector;
+use pinenut::{models::Vector, Client};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
