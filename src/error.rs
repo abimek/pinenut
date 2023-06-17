@@ -59,6 +59,6 @@ pub enum Error {
     #[error("Unsupported method: {}", method.as_str())]
     UnsupportedMethod {
         /// The unsupported method
-        method: Method 
+        method: Method,
     },
 }
