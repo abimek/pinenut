@@ -1,4 +1,4 @@
-use crate::{Error, Result, http::models::PineconeErrorResponse};
+use crate::{Error, Result};
 
 mod client;
 pub use client::Client;
@@ -8,6 +8,7 @@ mod index;
 pub use index::Index;
 
 pub mod models;
+use models::PineconeErrorResponse;
 use reqwest::{RequestBuilder, Method, StatusCode, Response};
 use serde::{de::DeserializeOwned, Serialize};
 

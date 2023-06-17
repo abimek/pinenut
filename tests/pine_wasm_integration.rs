@@ -2,9 +2,11 @@ extern crate pinecone_wasm;
 
 use crate::pinecone_wasm::Client;
 use pinecone_wasm::models::Vector;
+#[cfg(target_arch="wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
-#[wasm_bindgen_test]
+#[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+#[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
 async fn index_upsert() {
 
     // We create an instance of client first and firstmost. Panics if it couldn't authenticate.

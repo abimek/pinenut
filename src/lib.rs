@@ -17,6 +17,8 @@
 //!
 //! Below is a basic client and index example.
 //!```no_run
+//!use pinecone_wasm::{Client, models::Vector};
+//!
 //!async fn index_upsert() {
 //!
 //!    // We create an instance of client first and firstmost. Panics if it couldn't authenticate.
@@ -46,18 +48,18 @@
 #![deny(missing_docs)]
 #![warn(rust_2018_idioms)]
 
-macro_rules! if_http {
+macro_rules! if_rest {
     ($($item:item)*) => {$(
-        #[cfg(feature="http")]
+        #[cfg(feature="rest")]
         $item
     )*}
 }
 
 //TODO: create macro for GRCP when that becomes implemented
 
-if_http! {
-    mod http;
-    pub use self::http::{models, Client, Index};
+if_rest! {
+    mod rest;
+    pub use self::rest::{models, Client, Index};
 }
 
 pub mod error;

@@ -13,14 +13,21 @@ keywords = ["pinecone"]
 categories = ["api-bindings", "wsm"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [features]
-default = ["http"]
-http = []
+default = ["rest"]
+rest = []
+wasm = []
 # grcp = [] // This is a soon to come feature once I enable grcp communciatio
 
 [dependencies]
 reqwest = {version = "0.11", features=["json"]}
-wasm-bindgen-test = "0.3.0"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = {version="1.0", features = ["preserve_order"]}
 thiserror = "1.0"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+tokio = { version = "1.0", default-features = false, features = ["macros"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-test = "0.3.0"

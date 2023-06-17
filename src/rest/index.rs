@@ -1,6 +1,6 @@
 use reqwest::{StatusCode, Method};
 use serde_json::Value;
-use crate::{Result, http::{try_pinecone_request_json, try_pinecone_request_text}, models::{ConfigureIndexRequest, UpdateRequest, FetchRequest, FetchResponse, QueryRequest, QueryResponse, ClientInfo}}; 
+use crate::{Result, rest::{try_pinecone_request_json, try_pinecone_request_text}, models::{ConfigureIndexRequest, UpdateRequest, FetchRequest, FetchResponse, QueryRequest, QueryResponse, ClientInfo}}; 
 
 use super::{
     Connection,
@@ -144,6 +144,7 @@ impl Connection for Index {
 mod index_tests {
 
     use super::*;
+    #[cfg(target_arch="wasm32")]
     use wasm_bindgen_test::*;
     use crate::{Client, Error};
 
@@ -158,7 +159,8 @@ mod index_tests {
         Index::new(con, env!("PINECONE_INDEX_NAME"), con.info())
     }
 
-    #[wasm_bindgen_test]
+    #[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+    #[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
     async fn test_upsert() {
         let client = create_client().await;
         let mut index = create_index(&client).await;
@@ -174,7 +176,8 @@ mod index_tests {
         }
     }
 
-    #[wasm_bindgen_test]
+    #[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+    #[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
     async fn test_describe() {
         let client = create_client().await;
         let mut index = create_index(&client).await;
@@ -185,7 +188,8 @@ mod index_tests {
         }
     }
 
-    #[wasm_bindgen_test]
+    #[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+    #[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
     async fn test_describe_stats() {
         let client = create_client().await;
         let mut index = create_index(&client).await;
@@ -195,7 +199,8 @@ mod index_tests {
         }
     }
 
-    #[wasm_bindgen_test]
+    #[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+    #[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
     async fn test_configure_index() {
         let client = create_client().await;
         let index = create_index(&client).await;
@@ -218,7 +223,8 @@ mod index_tests {
         }
     }
 
-    #[wasm_bindgen_test]
+    #[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+    #[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
     async fn test_update_index(){
         let client = create_client().await;
         let mut index = create_index(&client).await;
@@ -242,7 +248,8 @@ mod index_tests {
         }
     }
 
-    #[wasm_bindgen_test]
+    #[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+    #[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
     async fn test_fetch_index(){
         let client = create_client().await;
         let mut index = create_index(&client).await;
@@ -253,7 +260,8 @@ mod index_tests {
         }
     }
 
-    #[wasm_bindgen_test]
+    #[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+    #[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
     async fn test_query_index(){
         let client = create_client().await;
         let mut index = create_index(&client).await;

@@ -1,7 +1,7 @@
 use reqwest::{StatusCode, Method};
 use crate::{
     Result, 
-    Index, models::{CollectionDescription, CreateCollectionRequest, IndexCreateRequest, ClientInfo}, http::{try_pinecone_request_json, try_pinecone_request_text}
+    Index, models::{CollectionDescription, CreateCollectionRequest, IndexCreateRequest, ClientInfo}, rest::{try_pinecone_request_json, try_pinecone_request_text}
 
 };
 use super::{Credentials, Connection};
@@ -114,7 +114,10 @@ mod client_test {
 
     use super::*;
    // use crate::http::Metric;
+   
+    #[cfg(target_arch="wasm32")]
     use wasm_bindgen_test::*;
+
     use crate::{Error, models::Metric};
 
     async fn create_client() -> Client {
@@ -124,7 +127,8 @@ mod client_test {
         ).await.unwrap()
     }
 
-    #[wasm_bindgen_test]
+    #[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+    #[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
     async fn test_create_client() {
         let c = Client::new(
             env!("PINECONE_API_KEY"),
@@ -137,7 +141,8 @@ mod client_test {
         assert!(true)
     }
 
-    #[wasm_bindgen_test]
+    #[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+    #[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
     async fn test_list_indexes() {
         let client = create_client().await;
         match client.list_indexes().await {
@@ -148,7 +153,8 @@ mod client_test {
         }
     }
 
-    #[wasm_bindgen_test]
+    #[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+    #[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
     async fn test_create_index() {
         let client = create_client().await;
         match client.create_index(IndexCreateRequest{
@@ -175,7 +181,8 @@ mod client_test {
         }
     }
 
-    #[wasm_bindgen_test]
+    #[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+    #[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
     async fn test_create_collection() {
         let client = create_client().await;
         match client.create_collection("testcollection", env!("PINECONE_INDEX_NAME")).await {
@@ -200,7 +207,8 @@ mod client_test {
     }
 
 
-    #[wasm_bindgen_test]
+    #[cfg_attr(not(target_arch="wasm32"), tokio::test)]
+    #[cfg_attr(target_arch="wasm32", wasm_bindgen_test)]
     async fn test_delete_collection(){
         let client = create_client().await;
         match client.delete_collection("testcollection").await {

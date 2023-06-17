@@ -1,6 +1,6 @@
 //! pinecone-wasm Errors
 
-use crate::http::models::PineconeErrorResponse;
+use crate::rest::models::PineconeErrorResponse;
 use reqwest::{Method, Response, StatusCode};
 use std::result;
 use thiserror::Error as ThisError;
