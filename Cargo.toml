@@ -1,6 +1,6 @@
 [package]
 name = "pinenut"
-version = "0.1.0"
+version = "0.1.1"
 authors=["Abimalek Mekuriya"]
 documentation = "https://docs.rs./pinenut"
 repository = "https://github.com/abimek/pinenut"
