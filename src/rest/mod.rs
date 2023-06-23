@@ -144,7 +144,6 @@ where
         .header("Api-Key", &con.credentials().api_key)
         .header("accept", accept_type.to_string())
         .header("content-type", "application/json")
-        .header("Access-Control-Allow-Origin", format!("https://controller.{}.pinecone.io/", con.credentials().environment))
 }
 
 
@@ -158,5 +157,4 @@ where
         .header("Api-Key", &con.credentials().api_key)
         .header("accept", accept_type.to_string())
         .header("content-type", "application/json")
-        .header("Access-Control-Allow-Origin", format!("https://controller.{}.pinecone.io/", con.credentials().environment))
 }
