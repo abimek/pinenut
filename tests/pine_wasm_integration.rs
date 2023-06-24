@@ -16,11 +16,11 @@ async fn index_upsert() {
     let mut index = client.index(env!("PINECONE_INDEX_NAME"));
 
     // We use describe as a form of authenticate, panicing if we couldn't authenticate.
-    let _ = index.describe().await.unwrap();
+    let desc = index.describe().await.unwrap();
     let vec = Vector {
         id: "B".to_string(),
-        values: vec![0.5; 32],
-        sprase_values: None,
+        values: vec![0.5; desc.database.dimension],
+        sparse_values: None,
         metadata: None,
     };
 

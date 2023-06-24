@@ -29,7 +29,7 @@ async fn index_upsert() {
     let vec = Vector{
         id: "B".to_string(),
         values: vec![0.5; 32],
-        sprase_values: None,
+        sparse_values: None,
         metadata: None
     };
 

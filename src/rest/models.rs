@@ -167,7 +167,7 @@ pub struct Vector {
     /// The values this vector holds, this should the same length as the dimension of the vector.
     pub values: Vec<f32>,
     /// The sparse values the vector should hold.
-    pub sprase_values: Option<SparseValues>,
+    pub sparse_values: Option<SparseValues>,
     /// Vector metadata that can be used during queries.
     pub metadata: Option<MappedValue>
 }

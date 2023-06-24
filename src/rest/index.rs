@@ -164,10 +164,14 @@ mod index_tests {
     async fn test_upsert() {
         let client = create_client().await;
         let mut index = create_index(&client).await;
+        if let Err(err) = index.cached_then_normal_describe().await {
+            panic!("Unable to get dimension of index: {:?}", err);
+        }
+        let desc = index.description().unwrap();
         let vec = Vector{
             id: "B".to_string(),
-            values: vec![0.5; 32],
-            sprase_values: None,
+            values: vec![0.5; desc.database.dimension],
+            sparse_values: None,
             metadata: None
         };
         match index.upsert(String::from("halfbaked"), vec![vec]).await {
