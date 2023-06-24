@@ -88,7 +88,7 @@ impl Index {
 
     /// Upsert takes in a [`Vec<Vector>`] and attempts to upsert / upload it to pinecone. It will
     /// return a [`UpsertResponse`] which is detailed in [Pinecone](https://docs.pinecone.io/reference/upsert)
-    pub async fn upsert(&mut self, namespace: String, vectors: Vec<Vector>) -> Result<UpsertResponse> {
+    pub async fn upsert(&self, namespace: String, vectors: Vec<Vector>) -> Result<UpsertResponse> {
         let upsert = VectorRequest{
             namespace,
             vectors
