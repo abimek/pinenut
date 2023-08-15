@@ -275,7 +275,7 @@ pub struct IndexDatabaseDescription {
     /// Number of pods.
     pub pods: usize,
     /// Pod type for the index.
-    pub pod_type: String,
+    pub pod_type: Option<String>,
 }
 
 /// Describes an Indexes Configuration
