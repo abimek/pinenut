@@ -41,9 +41,9 @@ pub struct ClientInfo {
     /// Name of the clients project.
     pub project_name: String,
     /// Name of clients user label
-    pub user_label: String,
+    pub user_label: Option<String>,
     /// Clients username
-    pub user_name: String
+    pub user_name: Option<String>
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone)]
